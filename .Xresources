@@ -1,0 +1,7 @@
+! Set font to DejaVu
+XTerm.vt100.boldFont:	DejaVu Sans Mono:style=Bold:size=8:antialias=True
+XTerm.vt100.faceName:	DejaVu Sans Mono:size=8
+Xterm.vt100.font:	DejaVu Sans Mono:size=8:antialias=True
+
+! Use CLIPBOARD instead of PRIMARY
+XTerm*selectToClipboard: true

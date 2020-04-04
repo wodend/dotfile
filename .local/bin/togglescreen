@@ -1,0 +1,79 @@
+#!/bin/bash
+#
+# Toggle laptop and external screens.
+
+# TODO: Something like the below
+# On my system, which is a dell notebook I have the following in /etc/udev/rules.d/71-dell-hdmi.rules:
+# 
+# KERNEL=="card[0-9]*", \
+#         SUBSYSTEM=="drm", \
+#         ACTION=="change", \
+#         ENV{DISPLAY}=":0", \
+#         ENV{XAUTHORITY}="/home/ajnasz/.Xauthority", \
+#         RUN+="/home/ajnasz/bin/screenstart.sh"
+# 
+# When I plug it will call the script /home/ajnasz/bin/screenstart.sh which has composes the xrandr command I need.
+# 
+# You can use the udevadm monitor command to see what events triggered when you plug in/out the external monitor.
+# 
+# What I do in the script which may helps with the window drawing problems I turn off all external screen before configuring them:
+# 
+# setoff() {
+# 	if [ -z "$DEFAULT_DISPLAY" ];then
+# 		echo "NO DEFAULT DISPLAY FOUND" >&2
+# 		exit 1
+# 	fi
+# 	for display in `xrandr | awk '/connected/ {print $1}'`; do
+# 		if [ "$display" != "$DEFAULT_DISPLAY" ];then
+# 			echo "maybe disabling $display" >&2
+# 			xrandr --output $display --off
+# 		fi
+# 	done;
+# }
+
+# KERNEL[5532.834481] change   /devices/pci0000:00/0000:00:1f.2/ata2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
+# UDEV  [5535.567576] change   /devices/pci0000:00/0000:00:1f.2/ata2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
+#
+# udevadm output for DP (Nividia graphics)
+# KERNEL[910.661645] change   /devices/pci0000:00/0000:00:1f.2/ata2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
+# UDEV  [911.103503] change   /devices/pci0000:00/0000:00:1f.2/ata2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
+#
+# udevadm output for VGA (Integrated graphics)
+# KERNEL[8010.535907] change   /devices/pci0000:00/0000:00:02.0/drm/card1 (drm)
+# UDEV  [8010.541618] change   /devices/pci0000:00/0000:00:02.0/drm/card1 (drm)
+
+active=$(xrandr --listmonitors \
+	 | tail -n+2 \
+	 | awk '{print $4}' \
+         | head -n1)
+connected=$(xrandr --query | awk '$2 == "connected" {print $1}')
+
+function switch_screen() {
+  xrandr --output "$1" --off \
+         --output "$2" --off
+  xrandr --output "$1" --off \
+         --output "$2" --auto
+  logger "Switched output from $1 to $2."
+}
+
+laptop_regex='(LVDS-[0-9]+)'
+external_regex='(DP-[0-9]+)|(VGA-[0-9]+)'
+
+if [[ "${connected}" =~ ${laptop_regex} ]]; then
+  laptop_screen="${BASH_REMATCH[1]}"
+  logger "Laptop ${laptop_screen}"
+  if [[ "${active}" =~ ${external_regex} ]]; then
+    switch_screen "${BASH_REMATCH[1]}" "${laptop_screen}"
+  elif [[ "${connected}" =~ ${external_regex} ]]; then
+    if [[ -n "${BASH_REMATCH[1]}" ]]; then
+      switch_screen "${laptop_screen}" "${BASH_REMATCH[1]}"
+    else
+      switch_screen "${laptop_screen}" "${BASH_REMATCH[2]}"
+    fi
+  else
+    logger "Failed to find external monitor."
+    xrandr --output "${laptop_screen}" --auto
+  fi
+else
+  logger -p3 'Failed to find laptop screen.'
+fi

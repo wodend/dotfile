@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Start the server on the appropriate VT to keep authenticated session.
+exec /usr/bin/X -nolisten tcp "$@" vt$XDG_VTNR

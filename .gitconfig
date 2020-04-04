@@ -1,0 +1,5 @@
+[user]
+	email = wodend@tuta.io
+	name = Weston Odend'hal
+[core]
+	excludesfile = /home/estoff/.gitignore

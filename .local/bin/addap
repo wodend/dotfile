@@ -1,0 +1,10 @@
+interface="wlp3s0"
+
+echo -n 'Access point SSID: '
+read ssid
+stty -echo
+echo -n 'Access point password: '
+read password
+stty echo
+echo
+wpa_passphrase "${ssid}" "${password}" | awk '!/#psk/' >> "/etc/wpa_supplicant/wpa_supplicant-${interface}.conf"
