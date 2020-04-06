@@ -55,6 +55,7 @@ set expandtab
 " Material Palenight colorscheme
 syntax on
 let base16colorspace=256
+set termguicolors " Use terminal colors since cmd.exe is ISO-8613-3 compliant
 colorscheme base16-material-palenight
 
 " Show some whitespace characters
