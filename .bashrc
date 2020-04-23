@@ -13,5 +13,6 @@ stty -ixon
 # Material Palenight colorscheme
 . "${HOME}/.local/bin/base16-material-palenight.sh"
 
-# Alias for managing dotfiles
+# Manage dotfiles
 alias dotfile="git --git-dir=${HOME}/.dotfile.git --work-tree=${HOME}"
+alias xterm-256color="xterm -tn 'xterm-256color'"
